@@ -1,0 +1,40 @@
+- name: MariaDBのリポジトリを追加
+  copy:
+    src: "../../wordpress/files/{{ MariaDB_version }}.repo"
+    dest: /etc/yum.repos.d/MariaDB.repo
+
+- name: MariaDBのインストール
+  yum:
+    name: "{{ item }}"
+  with_items:
+   - MariaDB-server
+   - MariaDB-client
+   - MySQL-python
+
+- name: mysql起動設定
+  service:
+    name: mysql
+    enabled: yes
+    state: started
+
+- name: DB作成
+  mysql_db:
+    login_user: root
+    login_password:
+    name: wp-db
+    state: present
+    encoding: utf8mb4
+
+- name: ユーザ追加
+  mysql_user:
+    login_user: root
+    login_password:
+    name: wp-user
+    password: wp-pass
+    priv: wp-db.*:ALL
+    state: present
+
+- name: mysqlサービス再起動
+  service:
+    name: mysql
+    state: restarted

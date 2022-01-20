@@ -1,0 +1,99 @@
+- name: Apacheのインストール
+  yum:
+    name: httpd
+
+- name: Apacheの起動設定
+  systemd:
+    name: httpd
+    state: started
+    enabled: yes
+
+- name: wordpressのダウンロード
+  get_url:
+    url: "{{ wordpress_url }}"
+    dest: "{{ wordpress_dest }}"
+  register: result
+
+- name: wordpressの解凍
+  unarchive:
+    src: "{{ result.dest }}"
+    dest: "{{ wordpress_dest }}"
+
+- name: 圧縮ファイルの削除
+  file:
+    path: "{{ result.dest }}"
+    state: absent
+
+- name: 指定のPHPバージョンをインストール
+  shell: amazon-linux-extras install "{{ php_version }}"
+
+- name: PHPの有効化
+  shell: amazon-linux-extras enable "{{ php_version }}"
+
+- name: PHPのインストール1
+  yum:
+    name: "{{ php_list1 }}"
+
+- name: PHPのインストール2
+  yum:
+    name: "{{ php_list2 }}"
+
+- name: MariaDBのリポジトリを追加
+  copy:
+    src: "../files/{{ MariaDB_version }}.repo"
+    dest: /etc/yum.repos.d/MariaDB.repo 
+
+- name: MariaDBのインストール
+  yum:
+    name: "{{ item }}"
+  with_items:
+   - MariaDB-server
+   - MariaDB-client
+
+- name: MariaDBの起動設定
+  systemd:
+    name: mariadb
+    state: started
+    enabled: yes
+
+- name: ドキュメントルートの権限変更
+  file:
+    path: /var/www
+    owner: apache
+    group: apache
+    recurse: yes
+
+- name: wp-configの作成
+  copy:
+    src: "{{ wp_config_src }}"
+    remote_src: yes
+    dest: "{{ wp_config_dest }}"
+
+- name: wp-configにDB名の設定
+  replace:
+    dest: "{{ wp_config_dest }}"
+    regexp: database_name_here
+    replace: "{{ db_name }}"
+
+- name: wp-configにユーザー名の設定
+  replace:
+    dest: "{{ wp_config_dest }}"
+    regexp: username_here
+    replace: "{{ db_user }}"
+
+- name: wp-configにパスワードの設定
+  replace:
+    dest: "{{ wp_config_dest }}"
+    regexp: password_here
+    replace: "{{ db_pass }}"
+
+- name: wp-configにホストの設定
+  replace:
+    dest: "{{ wp_config_dest }}"
+    regexp: database_name_here
+    replace: "{{ db_host }}"
+
+- name: Apacheの再起動
+  systemd:
+    name: httpd
+    state: restarted

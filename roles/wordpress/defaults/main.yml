@@ -1,0 +1,24 @@
+wordpress_url: https://wordpress.org/latest.tar.gz
+wordpress_dest: /var/www/html
+php_version: php7.4
+php_list1:
+  - php-cli
+  - php-pdo
+  - php-fpm
+  - php-json
+  - php-mysqlnd
+php_list2:
+  - php
+  - php-gd
+  - php-mbstring
+  - php-opcache
+  - php-xml
+  - php-common
+MariaDB_version: MariaDB10.5
+wp_config_src: "{{ wordpress_dest }}/wordpress/wp-config-sample.php"
+wp_config_dest: "{{ wordpress_dest}}/wordpress/wp-config.php"
+db_name: wp-db
+db_user: wp-user
+db_pass: wp-pass
+db_host: localhost
+
