@@ -1,4 +1,4 @@
-# ansble_create-wordpress
+# 構成
 
 ansible_create-wordpress  
 　-inventory.ini(今回利用せず)  
